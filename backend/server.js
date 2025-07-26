@@ -11,20 +11,16 @@ dotenv.config();
 
 // --- IMPORT ROUTE FILES ---
 const authRoutes = require('./routes/authRoutes');
+const dataRoutes = require('./routes/dataRoutes'); // <-- ADD THIS LINE
 
 // Initialize the Express app
 const app = express();
 
 // --- Middleware ---
-
-// Enable Cross-Origin Resource Sharing (CORS)
 app.use(cors());
-
-// Enable Express to parse JSON in the request body
 app.use(express.json());
 
 // --- Database Connection ---
-
 const MONGO_URI = process.env.MONGO_URI;
 const PORT = process.env.PORT || 5001;
 
@@ -47,11 +43,8 @@ mongoose.connect(MONGO_URI)
 
 
 // --- API ROUTES ---
-
-// Use the authentication routes with the '/api/auth' prefix
-// All routes in authRoutes.js will now be accessible under '/api/auth'
-// e.g., /api/auth/signup, /api/auth/signin
 app.use('/api/auth', authRoutes);
+app.use('/api/data', dataRoutes); // <-- ADD THIS LINE
 
 
 // A simple test route to ensure the server is working
