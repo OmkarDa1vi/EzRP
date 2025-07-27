@@ -142,7 +142,7 @@ const CreatePurchaseOrder = () => {
                                     <td>{item.name}</td>
                                     <td><input type="number" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value))} style={{width: '80px'}} /></td>
                                     <td><input type="number" value={item.cost} onChange={(e) => handleItemChange(index, 'cost', parseFloat(e.target.value))} style={{width: '100px'}} /></td>
-                                    <td>${(item.quantity * item.cost).toFixed(2)}</td>
+                                    <td>₹{(item.quantity * item.cost).toFixed(2)}</td>
                                     <td><button onClick={() => handleRemoveItem(index)} style={{color: 'red'}}>Remove</button></td>
                                 </tr>
                             ))}

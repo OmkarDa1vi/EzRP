@@ -51,7 +51,7 @@ const UserDashboard = () => {
                 <button onClick={logout} className="btn" style={{ backgroundColor: '#6c757d', width: 'auto' }}>Logout</button>
             </div>
             
-            <p>Welcome, {user?.name || 'User'}! This is your protected dashboard.</p>
+            <p>Welcome, {user?.name || 'User'}! This is your dashboard.</p>
 
             <hr style={{ margin: '2rem 0' }} />
 

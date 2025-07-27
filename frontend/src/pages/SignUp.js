@@ -1,124 +1,134 @@
 // src/pages/SignUp.js
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import authService from '../services/authService';
 
 const SignUp = () => {
-    // State to hold form data
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         password: '',
-        role: 'user', // Default role is 'user'
+        role: 'user', // This will be 'user' or 'admin'
     });
-
-    // State for handling messages and errors
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
-
     const navigate = useNavigate();
 
-    // Handles changes in form inputs
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value,
-        });
+        setFormData({ ...formData, [name]: value });
     };
 
-    // Handles form submission
     const handleSubmit = async (e) => {
-        e.preventDefault(); // Prevent default form submission
+        e.preventDefault();
         setMessage('');
         setError('');
-
         try {
-            // Call the signup service
-            const response = await authService.signup(formData);
-            setMessage('Sign-up successful! You will be redirected to sign in.');
-            
-            // Redirect to sign-in page after a short delay
+            // Prepare the data to be sent to the backend, ensuring the role is sent as 'roleName'
+            const signupData = {
+                name: formData.name,
+                email: formData.email,
+                password: formData.password,
+                roleName: formData.role, // The backend expects 'roleName'
+            };
+            await authService.signup(signupData);
+            setMessage('Sign-up successful! Redirecting to sign in...');
             setTimeout(() => {
                 navigate('/signin');
             }, 2000);
-
         } catch (err) {
-            // Handle errors from the backend
             const errorMessage = err.response?.data?.message || 'An unexpected error occurred.';
             setError(errorMessage);
         }
     };
 
     return (
-        <div className="container">
-            <form onSubmit={handleSubmit}>
-                <h2>Create Account</h2>
-                
-                {/* Display success or error messages */}
-                {message && <p style={{ color: 'green' }}>{message}</p>}
-                {error && <p style={{ color: 'red' }}>{error}</p>}
+        <div className="auth-container">
+            <div className="auth-card">
+                <h2>Create Your Account</h2>
+                <p>Get started with a new account today.</p>
 
-                <div className="form-group">
-                    <label htmlFor="name">Full Name</label>
-                    <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="email">Email Address</label>
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="password">Password</label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        minLength="6"
-                        required
-                    />
-                </div>
-                <div className="form-group">
-                    <label>Role</label>
-                    <div>
-                        <label>
-                            <input
-                                type="radio"
-                                name="role"
-                                value="user"
-                                checked={formData.role === 'user'}
-                                onChange={handleChange}
-                            /> User
-                        </label>
-                        <label style={{ marginLeft: '1rem' }}>
-                            <input
-                                type="radio"
-                                name="role"
-                                value="admin"
-                                checked={formData.role === 'admin'}
-                                onChange={handleChange}
-                            /> Admin
-                        </label>
+                <form onSubmit={handleSubmit}>
+                    {message && <p style={{ color: 'green', marginBottom: '1rem' }}>{message}</p>}
+                    {error && <p style={{ color: 'red', marginBottom: '1rem' }}>{error}</p>}
+
+                    <div className="form-group">
+                        <label htmlFor="name">Full Name</label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                            placeholder="John Doe"
+                        />
                     </div>
+                    <div className="form-group">
+                        <label htmlFor="email">Email Address</label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                            placeholder="you@example.com"
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="password">Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange} // <-- THIS LINE WAS MISSING
+                            minLength="6"
+                            required
+                            placeholder="Minimum 6 characters"
+                        />
+                    </div>
+                    
+                    {/* --- Admin/User Role Selection --- */}
+                    <div className="form-group">
+                        <label>Role</label>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginTop: '0.5rem' }}>
+                            <label style={{ fontWeight: 'normal', cursor: 'pointer' }}>
+                                <input
+                                    type="radio"
+                                    name="role"
+                                    value="user"
+                                    checked={formData.role === 'user'}
+                                    onChange={handleChange}
+                                    style={{ width: 'auto', marginRight: '0.5rem' }}
+                                />
+                                User
+                            </label>
+                            <label style={{ fontWeight: 'normal', cursor: 'pointer' }}>
+                                <input
+                                    type="radio"
+                                    name="role"
+                                    value="admin"
+                                    checked={formData.role === 'admin'}
+                                    onChange={handleChange}
+                                    style={{ width: 'auto', marginRight: '0.5rem' }}
+                                />
+                                Admin
+                            </label>
+                        </div>
+                    </div>
+                    {/* --- End Role Selection --- */}
+
+                    <button type="submit" className="btn">Create Account</button>
+                </form>
+
+                <div className="auth-link">
+                    <span>Already have an account? </span>
+                    <Link to="/signin">Sign In</Link>
                 </div>
-                <button type="submit" className="btn">Sign Up</button>
-            </form>
+            </div>
         </div>
     );
 };

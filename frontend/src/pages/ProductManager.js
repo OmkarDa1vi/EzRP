@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import productService from '../services/productService';
 import categoryService from '../services/categoryService';
 import configService from '../services/configService';
-import ProductForm from '../components/ProductForm'; // Import the form component
+import ProductForm from '../components/ProductForm';
 
 // Modal Styling
 const modalOverlayStyle = {
@@ -27,16 +27,12 @@ const ProductManager = () => {
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
 
-    // State for managing the Add/Edit modal
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [currentProduct, setCurrentProduct] = useState(null); // If null, it's 'Add' mode; if object, it's 'Edit' mode
-
-    // State for delete confirmation
+    const [currentProduct, setCurrentProduct] = useState(null);
     const [productToDelete, setProductToDelete] = useState(null);
 
     const { token } = useAuth();
 
-    // --- Data Fetching ---
     const fetchData = async () => {
         try {
             setLoading(true);
@@ -59,7 +55,6 @@ const ProductManager = () => {
         fetchData();
     }, [token]);
 
-    // --- Modal Handlers ---
     const handleOpenAddModal = () => {
         setCurrentProduct(null);
         setIsModalOpen(true);
@@ -75,21 +70,27 @@ const ProductManager = () => {
         setCurrentProduct(null);
     };
 
-    // --- CRUD Handlers ---
     const handleFormSubmit = async (formData) => {
-        if (!formData) { // Handle cancel button click
+        if (!formData) {
             handleCloseModal();
             return;
         }
+
+        // --- FIXED: Add validation check here ---
+        if (!formData.categoryId) {
+            alert('Please select a category for the product.');
+            return; // Stop the submission
+        }
+
         try {
-            if (currentProduct) { // Edit mode
+            if (currentProduct) {
                 await productService.update(currentProduct._id, formData, token);
                 setMessage('Product updated successfully!');
-            } else { // Add mode
+            } else {
                 await productService.create(formData, token);
                 setMessage('Product added successfully!');
             }
-            await fetchData(); // Refresh the product list
+            await fetchData();
             handleCloseModal();
         } catch (err) {
             setError(err.response?.data?.message || 'Operation failed.');
@@ -110,7 +111,8 @@ const ProductManager = () => {
             setTimeout(() => { setMessage(''); setError(''); }, 4000);
         }
     };
-
+    
+    // ... (rest of the component JSX remains the same)
     const listStyle = { listStyleType: 'none', padding: 0 };
     const listItemStyle = { background: '#f4f4f4', margin: '10px 0', padding: '15px', borderRadius: '8px' };
     const itemHeaderStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' };
