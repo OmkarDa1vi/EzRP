@@ -12,7 +12,17 @@ import AdminDashboard from './pages/AdminDashboard';
 import Home from './pages/Home';
 import Unauthorized from './pages/Unauthorized';
 import ProductFieldManager from './pages/ProductFieldManager';
-import CategoryManager from './pages/CategoryManager'; // <-- Import the new page
+import CategoryManager from './pages/CategoryManager';
+import WarehouseManager from './pages/WarehouseManager';
+import ProductManager from './pages/ProductManager';
+import SupplierManager from './pages/SupplierManager';
+import PurchaseOrderManager from './pages/PurchaseOrderManager';
+import CreatePurchaseOrder from './pages/CreatePurchaseOrder';
+import CustomerManager from './pages/CustomerManager';
+import SalesOrderManager from './pages/SalesOrderManager';
+import CreateSalesOrder from './pages/CreateSalesOrder';
+import RoleManager from './pages/RoleManager';
+import AuditLogManager from './pages/AuditLogManager'; // <-- Import the new page
 
 // --- Import Helper Components ---
 import ProtectedRoute from './components/ProtectedRoute';
@@ -37,7 +47,17 @@ function App() {
           <Route element={<ProtectedRoute roles={['admin']} />}>
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/fields" element={<ProductFieldManager />} />
-            <Route path="/admin/categories" element={<CategoryManager />} /> {/* <-- Add the new route */}
+            <Route path="/admin/categories" element={<CategoryManager />} />
+            <Route path="/admin/warehouses" element={<WarehouseManager />} />
+            <Route path="/admin/products" element={<ProductManager />} />
+            <Route path="/admin/suppliers" element={<SupplierManager />} />
+            <Route path="/admin/pos" element={<PurchaseOrderManager />} />
+            <Route path="/admin/pos/create" element={<CreatePurchaseOrder />} />
+            <Route path="/admin/customers" element={<CustomerManager />} />
+            <Route path="/admin/salesorders" element={<SalesOrderManager />} />
+            <Route path="/admin/salesorders/create" element={<CreateSalesOrder />} />
+            <Route path="/admin/roles" element={<RoleManager />} />
+            <Route path="/admin/auditlogs" element={<AuditLogManager />} /> {/* <-- Add the new route */}
           </Route>
 
         </Routes>

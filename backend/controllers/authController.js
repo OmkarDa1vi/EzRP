@@ -1,42 +1,68 @@
 // controllers/authController.js
 
 const User = require('../models/User');
+const Role = require('../models/Role');
 const jwt = require('jsonwebtoken');
 
 // Helper function to sign a JWT
-const generateToken = (id, role) => {
-    return jwt.sign({ id, role }, process.env.JWT_SECRET, {
-        expiresIn: '1d', // Token will expire in 1 day
-    });
+// The payload now contains a structured list of permission objects
+const generateToken = (user) => {
+    // Map the populated permission documents into a clean array for the JWT
+    const permissions = user.roleId.permissions.map(p => ({
+        module: p.module,
+        action: p.action,
+    }));
+
+    return jwt.sign(
+        { 
+            id: user._id, 
+            role: user.roleId.name,
+            permissions: permissions // The new structured array
+        }, 
+        process.env.JWT_SECRET, 
+        {
+            expiresIn: '1d',
+        }
+    );
 };
 
 // --- Sign-Up Controller ---
+// This function remains largely the same, but benefits from the new generateToken
 exports.signup = async (req, res) => {
     try {
-        // Destructure name, email, password, and role from the request body
-        const { name, email, password, role } = req.body;
+        const { name, email, password, phone, roleName = 'user' } = req.body;
 
-        // Check if a user with the given email already exists
+        const userRole = await Role.findOne({ name: roleName });
+        if (!userRole) {
+            return res.status(400).json({ message: `Role '${roleName}' does not exist.` });
+        }
+
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: 'User with this email already exists.' });
         }
 
-        // Create a new user instance
         const newUser = new User({
             name,
             email,
-            password,
-            role, // role can be 'user' or 'admin'
+            phone,
+            passwordHash: password,
+            roleId: userRole._id,
         });
 
-        // The password will be hashed automatically by the pre-save middleware in User.js
         await newUser.save();
+        
+        // --- CRITICAL: Nested Populate ---
+        // We now populate the role, and within the role, we populate the permissions.
+        await newUser.populate({
+            path: 'roleId',
+            populate: {
+                path: 'permissions'
+            }
+        });
 
-        // Generate a token for the new user
-        const token = generateToken(newUser._id, newUser.role);
+        const token = generateToken(newUser);
 
-        // Send a success response with the token and user info
         res.status(201).json({
             status: 'success',
             token,
@@ -45,7 +71,7 @@ exports.signup = async (req, res) => {
                     id: newUser._id,
                     name: newUser.name,
                     email: newUser.email,
-                    role: newUser.role,
+                    role: newUser.roleId.name,
                 },
             },
         });
@@ -59,28 +85,31 @@ exports.signup = async (req, res) => {
 // --- Sign-In Controller ---
 exports.signin = async (req, res) => {
     try {
-        // Destructure email and password from the request body
         const { email, password } = req.body;
 
-        // Check if email or password was provided
         if (!email || !password) {
             return res.status(400).json({ message: 'Please provide email and password.' });
         }
 
-        // Find the user by email. We use .select('+password') to explicitly include the password,
-        // as we might set it to be excluded by default in the future.
-        const user = await User.findOne({ email }).select('+password');
+        // --- CRITICAL: Nested Populate on Sign-In ---
+        const user = await User.findOne({ email })
+            .select('+passwordHash')
+            .populate({
+                path: 'roleId',
+                populate: {
+                    path: 'permissions'
+                }
+            });
 
-        // Check if user exists and if the password is correct
-        // We use the comparePassword method we defined in the User model
         if (!user || !(await user.comparePassword(password))) {
             return res.status(401).json({ message: 'Incorrect email or password.' });
         }
+        
+        user.lastLogin = Date.now();
+        await user.save({ validateBeforeSave: false });
 
-        // If credentials are correct, generate a token
-        const token = generateToken(user._id, user.role);
+        const token = generateToken(user);
 
-        // Send a success response with the token
         res.status(200).json({
             status: 'success',
             token,
@@ -89,7 +118,7 @@ exports.signin = async (req, res) => {
                     id: user._id,
                     name: user.name,
                     email: user.email,
-                    role: user.role,
+                    role: user.roleId.name,
                 },
             },
         });
