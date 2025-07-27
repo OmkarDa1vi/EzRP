@@ -11,7 +11,9 @@ dotenv.config();
 
 // --- IMPORT ROUTE FILES ---
 const authRoutes = require('./routes/authRoutes');
-const dataRoutes = require('./routes/dataRoutes'); // <-- ADD THIS LINE
+const dataRoutes = require('./routes/dataRoutes');
+const configRoutes = require('./routes/configRoutes');
+const categoryRoutes = require('./routes/categoryRoutes'); // <-- ADD THIS LINE
 
 // Initialize the Express app
 const app = express();
@@ -44,7 +46,9 @@ mongoose.connect(MONGO_URI)
 
 // --- API ROUTES ---
 app.use('/api/auth', authRoutes);
-app.use('/api/data', dataRoutes); // <-- ADD THIS LINE
+app.use('/api/data', dataRoutes);
+app.use('/api/config', configRoutes);
+app.use('/api/categories', categoryRoutes); // <-- ADD THIS LINE
 
 
 // A simple test route to ensure the server is working

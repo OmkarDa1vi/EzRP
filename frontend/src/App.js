@@ -11,6 +11,8 @@ import UserDashboard from './pages/UserDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Home from './pages/Home';
 import Unauthorized from './pages/Unauthorized';
+import ProductFieldManager from './pages/ProductFieldManager';
+import CategoryManager from './pages/CategoryManager'; // <-- Import the new page
 
 // --- Import Helper Components ---
 import ProtectedRoute from './components/ProtectedRoute';
@@ -26,15 +28,16 @@ function App() {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
 
-          {/* --- Protected Routes --- */}
-          {/* User and Admin can access the user dashboard */}
+          {/* --- Protected User Route --- */}
           <Route element={<ProtectedRoute roles={['user', 'admin']} />}>
             <Route path="/dashboard" element={<UserDashboard />} />
           </Route>
 
-          {/* Only Admin can access the admin dashboard */}
+          {/* --- Protected Admin Routes --- */}
           <Route element={<ProtectedRoute roles={['admin']} />}>
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/fields" element={<ProductFieldManager />} />
+            <Route path="/admin/categories" element={<CategoryManager />} /> {/* <-- Add the new route */}
           </Route>
 
         </Routes>
