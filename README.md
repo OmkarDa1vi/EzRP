@@ -105,3 +105,7 @@ Manage Customers
 Manage Products (you can now select categories)
 
 Manage Purchase Orders / Sales Orders (you can now select products, suppliers, and customers)
+
+Here is the demo link of the project - EzRP
+
+https://drive.google.com/file/d/1KIAUVzn3SvfI10yUcJUWU_S7NlW03F02/view?usp=drive_link
