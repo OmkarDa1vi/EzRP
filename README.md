@@ -1,8 +1,8 @@
-MERN Stack Inventory & Management System
+MERN Stack ERP System
 This is a full-stack MERN (MongoDB, Express, React, Node.js) application with a comprehensive admin panel for managing products, inventory, sales, customers, and more. It features a secure, permission-based access control system using JSON Web Tokens (JWT).
 
 Project Structure
-mern-auth-project/
+EzRP/
 ├── backend/
 │   ├── controllers/
 │   ├── middleware/
@@ -29,13 +29,13 @@ Node.js and npm: Download Node.js (npm is included)
 
 Git: Download Git
 
-MongoDB Atlas Account: You need a cloud database. Create a free account here.
+MongoDB Atlas Account: You need a cloud database. 
 
 Backend Setup Instructions
 Navigate to the Backend Directory:
 Open your terminal and cd into the backend folder.
 
-cd mern-auth-project/backend
+cd EzRP/backend
 
 Install Dependencies:
 Run the following command to install all the necessary server-side libraries.
@@ -62,7 +62,7 @@ Frontend Setup Instructions
 Navigate to the Frontend Directory:
 Open a new, separate terminal window and cd into the frontend folder.
 
-cd mern-auth-project/frontend
+cd EzRP/frontend
 
 Install Dependencies:
 Run the following command to install all the necessary client-side libraries.
