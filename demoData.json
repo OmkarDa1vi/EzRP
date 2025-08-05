@@ -1,0 +1,45 @@
+{
+  "categories": [
+    { "name": "Electronics", "description": "Gadgets and electronic devices from Gada Electronics." },
+    { "name": "Food Items", "description": "Snacks and delicious food items." },
+    { "name": "Educational Materials", "description": "Notes and supplies for students." },
+    { "name": "Apparel", "description": "Clothing and fashion accessories." }
+  ],
+  "suppliers": [
+    { "name": "Gada Electronics", "contactName": "Jethalal Gada", "phone": "9876543210", "email": "jetha@gadaelectronics.com" },
+    { "name": "Bhide Master Classes", "contactName": "Atmaram Bhide", "phone": "9988776655", "email": "bhide.master@gokuldham.in" }
+  ],
+  "customers": [
+    { "name": "Popatlal Pandey", "phone": "8877665544", "email": "popatlal.reporter@toofanexpress.com" },
+    { "name": "Dr. Hansraj Hathi", "phone": "7766554433", "email": "dr.hathi@gokuldham.in" },
+    { "name": "Roshan Singh Sodhi", "phone": "8888888888", "email": "sodhi.garage@gokuldham.in" }
+  ],
+  "products": [
+    { "name": "Gada Electronics 55\" Smart TV", "sku": "GADA-TV-55", "category": "Electronics", "b2cPrice": 52000, "costPrice": 45000 },
+    { "name": "Jalebi & Fafda Combo", "sku": "JFC-01", "category": "Food Items", "b2cPrice": 250, "costPrice": 150 },
+    { "name": "Bhide's Tuition Notes (10th Std)", "sku": "BHIDE-NOTES-10", "category": "Educational Materials", "b2cPrice": 1200, "costPrice": 400 }
+  ],
+  "salesOrders": [
+    {
+      "customer": "Popatlal Pandey",
+      "orderDate": "2025-05-10",
+      "status": "paid",
+      "items": [{ "product": "Gada Electronics 55\" Smart TV", "quantity": 1, "price": 52000 }]
+    },
+    {
+      "customer": "Dr. Hansraj Hathi",
+      "orderDate": "2025-06-22",
+      "status": "paid",
+      "items": [
+        { "product": "Jalebi & Fafda Combo", "quantity": 10, "price": 250 },
+        { "product": "Bhide's Tuition Notes (10th Std)", "quantity": 1, "price": 1200 }
+      ]
+    },
+    {
+      "customer": "Roshan Singh Sodhi",
+      "orderDate": "2025-07-18",
+      "status": "paid",
+      "items": [{ "product": "Gada Electronics 55\" Smart TV", "quantity": 2, "price": 51500 }]
+    }
+  ]
+}
