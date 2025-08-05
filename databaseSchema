@@ -1,0 +1,219 @@
+// File: backend/models/User.js
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const userSchema = new mongoose.Schema({
+    name: { type: String, required: true, trim: true },
+    email: { type: String, required: true, unique: true, lowercase: true, match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address'] },
+    phone: { type: String, trim: true },
+    profilePhoto: { type: String },
+    passwordHash: { type: String, required: true, minlength: 6, select: false },
+    passwordResetToken: String,
+    tokenExpiry: Date,
+    roleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Role', required: true },
+    lastLogin: { type: Date },
+    isActive: { type: Boolean, default: true },
+}, { timestamps: true });
+userSchema.pre('save', async function(next) {
+    if (!this.isModified('passwordHash')) return next();
+    const salt = await bcrypt.genSalt(12);
+    this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
+    next();
+});
+userSchema.methods.comparePassword = async function(candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.passwordHash);
+};
+module.exports = mongoose.model('User', userSchema);
+
+// ---
+
+// File: backend/models/Role.js
+const mongoose = require('mongoose');
+const roleSchema = new mongoose.Schema({
+    name: { type: String, required: true, unique: true, trim: true },
+    description: { type: String, trim: true },
+    permissions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Permission' }],
+    isDefault: { type: Boolean, default: false },
+}, { timestamps: true });
+module.exports = mongoose.model('Role', roleSchema);
+
+// ---
+
+// File: backend/models/Permission.js
+const mongoose = require('mongoose');
+const permissionSchema = new mongoose.Schema({
+    module: { type: String, required: true, trim: true },
+    action: { type: String, required: true, trim: true },
+    scope: { type: String, trim: true, enum: ['own', 'all', 'department'] },
+    description: { type: String, trim: true },
+}, { indexes: [{ unique: true, fields: ['module', 'action'] }] });
+module.exports = mongoose.model('Permission', permissionSchema);
+
+// ---
+
+// File: backend/models/AuditLog.js
+const mongoose = require('mongoose');
+const auditLogSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    action: { type: String, required: true, trim: true },
+    actionType: { type: String, required: true, enum: ['CREATE', 'UPDATE', 'DELETE', 'LOGIN_SUCCESS', 'LOGIN_FAIL', 'PASSWORD_RESET', 'PERMISSION_CHANGE'] },
+    module: { type: String, required: true, trim: true },
+    recordId: { type: String, trim: true },
+    previousValues: { type: mongoose.Schema.Types.Mixed },
+    newValues: { type: mongoose.Schema.Types.Mixed },
+    ipAddress: { type: String },
+    metadata: { type: mongoose.Schema.Types.Mixed },
+}, { timestamps: { createdAt: true, updatedAt: false } });
+auditLogSchema.index({ userId: 1 });
+auditLogSchema.index({ module: 1, actionType: 1 });
+auditLogSchema.index({ createdAt: -1 });
+module.exports = mongoose.model('AuditLog', auditLogSchema);
+
+// ---
+
+// File: backend/models/Product.js
+const mongoose = require('mongoose');
+const productSchema = new mongoose.Schema({
+    sku: { type: String, required: true, unique: true, trim: true },
+    name: { type: String, required: true, trim: true },
+    description: { type: String, trim: true },
+    categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
+    productType: { type: String, enum: ['standard', 'bundle', 'service', 'subscription'], default: 'standard' },
+    brand: { type: String, trim: true },
+    supplierSku: { type: String, trim: true },
+    unit: { type: String, default: 'pcs' },
+    weight: { type: Number },
+    dimensions: { length: { type: Number }, width: { type: Number }, height: { type: Number } },
+    b2cPrice: { type: Number, required: true, default: 0 },
+    b2bPrice: { type: Number },
+    costPrice: { type: Number },
+    purchaseTaxRate: { type: Number, default: 0 },
+    salesTaxRate: { type: Number, default: 0 },
+    taxCategory: { type: String },
+    expiryDate: { type: Date },
+    manufactureDate: { type: Date },
+    shelfLifeDays: { type: Number },
+    storageConditions: { type: String },
+    lotNumber: { type: String },
+    serialNumbers: { type: [String], default: [] },
+    minOrderQty: { type: Number, default: 1 },
+    maxOrderQty: { type: Number },
+    reorderLevel: { type: Number },
+    attributes: [{ key: { type: String }, value: { type: String } }],
+    tags: { type: [String], default: [] },
+    images: { type: [String], default: [] },
+    videos: { type: [String], default: [] },
+    status: { type: String, enum: ['active', 'inactive', 'discontinued'], default: 'active' },
+}, { timestamps: true });
+module.exports = mongoose.model('Product', productSchema);
+
+// ---
+
+// File: backend/models/Category.js
+const mongoose = require('mongoose');
+const categorySchema = new mongoose.Schema({
+    name: { type: String, required: true, trim: true, unique: true },
+    parentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', default: null },
+    tags: { type: [String], default: [] }
+}, { timestamps: true });
+module.exports = mongoose.model('Category', categorySchema);
+
+// ---
+
+// File: backend/models/Warehouse.js
+const mongoose = require('mongoose');
+const warehouseSchema = new mongoose.Schema({
+    name: { type: String, required: true, trim: true, unique: true },
+    location: { type: String, required: true, trim: true },
+    managerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+}, { timestamps: true });
+module.exports = mongoose.model('Warehouse', warehouseSchema);
+
+// ---
+
+// File: backend/models/Supplier.js
+const mongoose = require('mongoose');
+const supplierSchema = new mongoose.Schema({
+    name: { type: String, required: true, trim: true, unique: true },
+    contactName: { type: String, trim: true },
+    phone: { type: String, trim: true },
+    email: { type: String, trim: true, lowercase: true, match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address'] },
+    address: { type: String, trim: true },
+    leadTimeDays: { type: Number, min: 0 },
+    rating: { type: Number, min: 1, max: 5 },
+}, { timestamps: true });
+module.exports = mongoose.model('Supplier', supplierSchema);
+
+// ---
+
+// File: backend/models/Customer.js
+const mongoose = require('mongoose');
+const customerSchema = new mongoose.Schema({
+    name: { type: String, required: true, trim: true, unique: true },
+    phone: { type: String, trim: true },
+    email: { type: String, trim: true, lowercase: true, match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address'] },
+    address: { type: String, trim: true },
+    loyaltyPoints: { type: Number, default: 0 },
+    taxExempt: { type: Boolean, default: false },
+}, { timestamps: true });
+module.exports = mongoose.model('Customer', customerSchema);
+
+// ---
+
+// File: backend/models/PurchaseOrder.js
+const mongoose = require('mongoose');
+const poItemSchema = new mongoose.Schema({
+    productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+    quantity: { type: Number, required: true, min: 1 },
+    cost: { type: Number, required: true, min: 0 }
+}, { _id: false });
+const purchaseOrderSchema = new mongoose.Schema({
+    supplierId: { type: mongoose.Schema.Types.ObjectId, ref: 'Supplier', required: true },
+    orderDate: { type: Date, default: Date.now },
+    status: { type: String, required: true, enum: ['draft', 'pending', 'received', 'cancelled'], default: 'draft' },
+    items: [poItemSchema],
+    totalAmount: { type: Number, required: true },
+    approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    expectedDate: { type: Date },
+    receivedDate: { type: Date },
+}, { timestamps: true });
+module.exports = mongoose.model('PurchaseOrder', purchaseOrderSchema);
+
+// ---
+
+// File: backend/models/SalesOrder.js
+const mongoose = require('mongoose');
+const soItemSchema = new mongoose.Schema({
+    productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+    quantity: { type: Number, required: true, min: 1 },
+    price: { type: Number, required: true, min: 0 }
+}, { _id: false });
+const salesOrderSchema = new mongoose.Schema({
+    customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer', required: true },
+    salesPersonId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    orderDate: { type: Date, default: Date.now },
+    status: { type: String, required: true, enum: ['draft', 'paid', 'cancelled', 'returned'], default: 'draft' },
+    shipmentStatus: { type: String, required: true, enum: ['pending', 'shipped', 'delivered'], default: 'pending' },
+    items: [soItemSchema],
+    subtotal: { type: Number, required: true },
+    discounts: { type: Number, default: 0 },
+    taxAmount: { type: Number, default: 0 },
+    totalAmount: { type: Number, required: true },
+    paymentMethod: { type: String },
+    shippingAddress: { type: String, trim: true },
+    notes: { type: String, trim: true },
+    invoiced: { type: Boolean, default: false },
+    invoiceId: { type: String, trim: true },
+}, { timestamps: true });
+module.exports = mongoose.model('SalesOrder', salesOrderSchema);
+
+// ---
+
+// File: backend/models/ProductFieldConfig.js
+const mongoose = require('mongoose');
+const ALL_PRODUCT_FIELDS = [ 'id', 'sku', 'name', 'description', 'categoryId', 'productType', 'brand', 'supplierSku', 'unit', 'weight', 'dimensions', 'b2cPrice', 'b2bPrice', 'costPrice', 'purchaseTaxRate', 'salesTaxRate', 'taxCategory', 'expiryDate', 'manufactureDate', 'shelfLifeDays', 'storageConditions', 'lotNumber', 'serialNumbers', 'minOrderQty', 'maxOrderQty', 'reorderLevel', 'attributes', 'tags', 'images', 'videos', 'status', 'createdAt', 'updatedAt' ];
+const DEFAULT_FIELDS = [ 'sku', 'name', 'description', 'b2cPrice', 'status' ];
+const productFieldConfigSchema = new mongoose.Schema({
+    configKey: { type: String, default: 'main', unique: true },
+    activeFields: { type: [String], enum: ALL_PRODUCT_FIELDS, default: DEFAULT_FIELDS }
+});
+module.exports = mongoose.model('ProductFieldConfig', productFieldConfigSchema);
